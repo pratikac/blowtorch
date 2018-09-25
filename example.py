@@ -133,7 +133,7 @@ def reload(model):
     d = th.load(opt['r'])
     model.load_state_dict(d['state_dict'])
     check_opt(d['opt'])
-    return d['e'], d['train_stats'], d['val_stats']
+    return d['e']+1, d['train_stats'], d['val_stats']
 
 def save(d):
     if not opt['save']:
@@ -172,6 +172,7 @@ def main():
 
     cudafy(model, criterion)
     pprint(opt)
+
     for e in range(start_e, opt['B']):
         print('')
         st, sv = None, None
@@ -179,7 +180,7 @@ def main():
         st = train(e, model, criterion, optimizer)
         sts.append(st)
 
-        if (e % opt['freq'] == 0 and e > 0) or e == opt['B']-1:
+        if e % opt['freq'] == 0 or e == opt['B']-1:
             sv = val(e, model, criterion)
             svs.append(sv)
 
