@@ -187,8 +187,8 @@ def main():
             save(dict(
                       opt=opt,
                       e=e, train_stats=sts, val_stats=svs,
-                      state_dict=model.state_dict() \
-                            if len(opt['gs']) == 1 else model.module.state_dict() ,
+                      state_dict=model.cpu().state_dict() \
+                            if len(opt['gs']) == 1 else model.module.cpu().state_dict() ,
                       ))
             cudafy(model, criterion)
 
