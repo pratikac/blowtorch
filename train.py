@@ -17,7 +17,7 @@ import  os, pdb, sys, json, subprocess, \
 from copy import deepcopy
 from scipy import interpolate
 
-from blowtorch import models, exptutils, loader, viz
+from blowtorch import models, loss, exptutils, loader, viz
 
 opt = exptutils.add_args([
 ['-o', '/home/%s/local2/pratikac/results'%os.environ['USER'], 'output'],
@@ -52,8 +52,6 @@ def train(e, model, criterion, optimizer):
     lr = exptutils.schedule(e, opt, 'lr')
     exptutils.set_lr(optimizer, lr)
 
-    ell2 = models.ell2(opt, model)
-
     g = opt['g']
     ds = loader.get_loader(opt, is_train=True)
 
@@ -65,7 +63,7 @@ def train(e, model, criterion, optimizer):
                 Variable(y.cuda(g, non_blocking=True))
         model.zero_grad()
         yh = model(x)
-        f = criterion(yh, y) + ell2(yh, y)
+        f = criterion(yh, y)
         f.backward()
 
         optimizer.step()
@@ -86,7 +84,6 @@ def train(e, model, criterion, optimizer):
 def val(e, model, criterion):
     model.eval()
 
-    ell2 = models.ell2(opt, model)
     g = opt['g']
     ds = loader.get_loader(opt, is_train=False)
 
@@ -99,7 +96,7 @@ def val(e, model, criterion):
             x, y = Variable(x.cuda(g, non_blocking=True)), \
                 Variable(y.cuda(g, non_blocking=True))
             yh = model(x)
-            f = criterion(yh, y) + ell2(yh, y)
+            f = criterion(yh, y)
 
             s['f'].append(f.item())
             s['top1'].append(exptutils.error(yh, y))
@@ -162,7 +159,8 @@ def setup():
 
 def main():
     model = getattr(models, opt['m'])(opt)
-    criterion = nn.CrossEntropyLoss()
+    criterion = loss.wrap(nn.CrossEntropyLoss(),
+                            loss.ell2(opt, model))
 
     lr = exptutils.schedule(0, opt, 'lr')
     optimizer = th.optim.SGD(model.parameters(), lr=lr,
