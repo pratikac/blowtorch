@@ -33,7 +33,8 @@ class ell2(_Loss):
     def forward(self, yh, y):
         f = 0
         for p,r in zip(self.wd, self.l2s):
-            f = f + self.l2/2.*(p*r.to(p.device)).norm()**2
+            r = r.to(p.device)
+            f = f + self.l2/2.*(p*r).norm()**2
         return f
 
 class wrap(_Loss):
