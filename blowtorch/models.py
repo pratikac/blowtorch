@@ -173,6 +173,14 @@ class allcnnl(allcnn):
     def __init__(self, opt, c1=120, c2=240):
         super().__init__(opt, c1, c2)
 
+class caddtable_t(nn.Module):
+    def __init__(self, m1, m2):
+        super(caddtable_t, self).__init__()
+        self.m1, self.m2 = m1, m2
+
+    def forward(self, x):
+        return th.add(self.m1(x), self.m2(x))
+
 class wrn(nn.Module):
     def __init__(self, opt):
         super().__init__()
