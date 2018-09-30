@@ -240,6 +240,24 @@ class wrn(nn.Module):
     def forward(self, x):
         return self.m(x)
 
+class wrn101(wrn):
+    name = 'wrn101'
+    def __init__(self, opt):
+        opt['depth'], opt['widen'] = 10,1
+        super().__init__(opt)
+
+class wrn164(wrn):
+    name = 'wrn164'
+    def __init__(self, opt):
+        opt['depth'], opt['widen'] = 16,4
+        super().__init__(opt)
+
+class wrn168(wrn):
+    name = 'wrn168'
+    def __init__(self, opt):
+        opt['depth'], opt['widen'] = 16,8
+        super().__init__(opt)
+
 class resnet18(nn.Module):
     name = 'resnet18'
     def __init__(self, opt):
