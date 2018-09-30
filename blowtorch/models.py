@@ -74,7 +74,6 @@ class lenet(nn.Module):
 
         opt['l2'] = 0.
         opt['d'] = opt.get('d', 0.25)
-        opt['lrs'] = '[[0,0.1],[30,0.01],[60,0.001],[90,0.0001]]'
 
         def convbn(ci,co,ksz,psz,p):
             return nn.Sequential(
@@ -118,7 +117,6 @@ class allcnn(nn.Module):
 
         opt['l2'] = 1e-3
         opt['d'] = opt.get('d', 0.)
-        opt['lrs'] = '[[0,0.1],[60,0.02],[120,0.004],[160,0.001],[200,0.0001]]'
 
         num_classes = get_num_classes(opt)
 
@@ -184,7 +182,6 @@ class wrn(nn.Module):
         opt['l2'] = 5e-4
         opt['depth'] = opt.get('depth', 28)
         opt['widen'] = opt.get('widen', 10)
-        opt['lrs'] = '[[0,0.1],[60,0.02],[120,0.004],[160,0.001],[200,0.0001]]'
 
         d, depth, widen = opt['d'], opt['depth'], opt['widen']
 
