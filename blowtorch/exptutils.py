@@ -120,6 +120,16 @@ def setup(opt):
 
     th.cuda.manual_seed_all(s)
 
+def cudafy(opt, model, criterion):
+    g, gs = opt['g'], opt['gs']
+    if len(gs) > 1:
+        model = nn.DataParallel(model, device_ids=gs,
+                                output_device=g)
+    else:
+        model = model.cuda(g)
+    criterion = criterion.cuda(g)
+    return model, criterion
+
 def schedule(e, opt, k=None):
     ks = opt.get(k+'s', json.dumps([[opt['B'], opt[k]]]))
     rs = np.array(json.loads(ks))

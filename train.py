@@ -38,15 +38,6 @@ opt = exptutils.add_args([
 ])
 opt['augment'] = True
 
-def cudafy(model, criterion):
-    g, gs = opt['g'], opt['gs']
-    if len(gs) > 1:
-        model = nn.DataParallel(model, device_ids=gs,
-                                output_device=g)
-    else:
-        model = model.cuda(g)
-    criterion = criterion.cuda(g)
-
 def train(e, model, criterion, optimizer):
     model.train()
     lr = exptutils.schedule(e, opt, 'lr')
@@ -168,7 +159,7 @@ def main():
 
     start_e, sts, svs = reload(model)
 
-    cudafy(model, criterion)
+    exptutils.cudafy(opt, model, criterion)
     pprint(opt)
 
     for e in range(start_e, opt['B']):
@@ -187,8 +178,9 @@ def main():
                       e=e, train_stats=sts, val_stats=svs,
                       state_dict=model.cpu().state_dict() \
                             if len(opt['gs']) == 1 else model.module.cpu().state_dict() ,
-                      ))
-            cudafy(model, criterion)
+                      criterion=criterion.cpu())
+            )
+            exptutils.cudafy(opt, model, criterion)
 
 setup()
 main()
