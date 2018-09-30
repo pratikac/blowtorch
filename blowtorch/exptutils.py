@@ -107,6 +107,7 @@ def setup(opt):
     s = opt['s']
     np.random.seed(s)
     th.manual_seed(s)
+
     # gpu
     ngpus = th.cuda.device_count()
     g, j = opt.get('g', 0), opt.get('j', 1)
