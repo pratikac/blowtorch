@@ -19,8 +19,9 @@ colors = {  'red':['\033[1;31m','\033[0m'],
 def color(c, s):
     return colors[c][0] + s + colors[c][1]
 
-def add_args(args):
-    p = argparse.ArgumentParser('adversarial', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+def add_args(args, name='main'):
+    p = argparse.ArgumentParser(name,
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     # [key, default, help, {action_store etc.}]
     for a in args:
@@ -104,21 +105,24 @@ def one_hot(y, nc):
 
 def setup(opt):
     # seed
-    s = opt['s']
+    s = opt.get('s', 42)
+    opt['s'] = s
     np.random.seed(s)
     th.manual_seed(s)
+
     # gpu
     ngpus = th.cuda.device_count()
-    g, j = opt.get('g', 0), opt.get('j', 1)
-    assert g < ngpus, "opt['g']=%d, %d GPUs detected"%(opt['g'], ngpus)
+    if ngpus:
+        g, j = opt.get('g', 0), opt.get('j', 1)
+        assert g < ngpus, "opt['g']=%d, %d GPUs detected"%(opt['g'], ngpus)
 
-    opt['g'], opt['j'] = g, j
-    gs = opt.get('gs', list(range(g, g+j)))
-    opt['gs'] = gs
-    if j == 1:
-        th.cuda.set_device(g)
+        opt['g'], opt['j'] = g, j
+        gs = opt.get('gs', list(range(g, g+j)))
+        opt['gs'] = gs
+        if j == 1:
+            th.cuda.set_device(g)
 
-    th.cuda.manual_seed_all(s)
+        th.cuda.manual_seed_all(s)
 
 def schedule(e, opt, k=None):
     ks = opt.get(k+'s', json.dumps([[opt['B'], opt[k]]]))
