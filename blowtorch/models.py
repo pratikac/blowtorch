@@ -11,33 +11,6 @@ import numpy as np
 
 bn_track_running_stats = False
 
-class ell2(_Loss):
-    def __init__(self, opt, model, random=False):
-        super().__init__()
-        self.m = model
-        self.random = random
-        self.l2 = opt['l2']
-
-        self.wd = []
-        self.l2s = []
-        for m in model.modules():
-            if not isinstance(m, nn.Sequential):
-                if isinstance(m, nn.Linear) or isinstance(m, nn.Conv2d):
-                    for n,p in m.named_parameters():
-                        if not n in ['bias']:
-                            self.wd.append(p)
-                            if self.random:
-                                _r = th.randn(p.shape).to(p.device)
-                                self.l2s.append(_r)
-                            else:
-                                self.l2s.append(th.ones(p.shape).to(p.device))
-
-    def forward(self, yh, y):
-        f = 0
-        for p,r in zip(self.wd, self.l2s):
-            f = f + self.l2/2.*(p*r).norm()**2
-        return f
-
 def get_num_classes(opt):
     d = dict(mnist=10, svhn=10, svhnx=10, cifar10=10,
             cifar100=100, imagenet=1000, halfmnist=10)
@@ -101,7 +74,6 @@ class lenet(nn.Module):
 
         opt['l2'] = 0.
         opt['d'] = opt.get('d', 0.25)
-        opt['lrs'] = '[[0,0.1],[30,0.01],[60,0.001],[90,0.0001]]'
 
         def convbn(ci,co,ksz,psz,p):
             return nn.Sequential(
@@ -145,7 +117,6 @@ class allcnn(nn.Module):
 
         opt['l2'] = 1e-3
         opt['d'] = opt.get('d', 0.)
-        opt['lrs'] = '[[0,0.1],[60,0.02],[120,0.004],[160,0.001],[200,0.0001]]'
 
         num_classes = get_num_classes(opt)
 
@@ -202,6 +173,14 @@ class allcnnl(allcnn):
     def __init__(self, opt, c1=120, c2=240):
         super().__init__(opt, c1, c2)
 
+class caddtable_t(nn.Module):
+    def __init__(self, m1, m2):
+        super(caddtable_t, self).__init__()
+        self.m1, self.m2 = m1, m2
+
+    def forward(self, x):
+        return th.add(self.m1(x), self.m2(x))
+
 class wrn(nn.Module):
     def __init__(self, opt):
         super().__init__()
@@ -211,7 +190,6 @@ class wrn(nn.Module):
         opt['l2'] = 5e-4
         opt['depth'] = opt.get('depth', 28)
         opt['widen'] = opt.get('widen', 10)
-        opt['lrs'] = '[[0,0.1],[60,0.02],[120,0.004],[160,0.001],[200,0.0001]]'
 
         d, depth, widen = opt['d'], opt['depth'], opt['widen']
 
@@ -269,6 +247,24 @@ class wrn(nn.Module):
 
     def forward(self, x):
         return self.m(x)
+
+class wrn101(wrn):
+    name = 'wrn101'
+    def __init__(self, opt):
+        opt['depth'], opt['widen'] = 10,1
+        super().__init__(opt)
+
+class wrn164(wrn):
+    name = 'wrn164'
+    def __init__(self, opt):
+        opt['depth'], opt['widen'] = 16,4
+        super().__init__(opt)
+
+class wrn168(wrn):
+    name = 'wrn168'
+    def __init__(self, opt):
+        opt['depth'], opt['widen'] = 16,8
+        super().__init__(opt)
 
 class resnet18(nn.Module):
     name = 'resnet18'
