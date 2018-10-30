@@ -11,7 +11,9 @@ from torchvision import datasets
 import blowtorch.cvtransforms as cv
 import cv2, os, sys, pdb
 
-def get_imagenet_loader(opt, is_train=True, loc='/local2/pratikac/'):
+DATA = '/data/'
+
+def get_imagenet_loader(opt, is_train=True, loc=DATA):
     loc = loc + 'imagenet'
     nw = max(opt['j'], 4)
 
@@ -41,7 +43,7 @@ def get_imagenet_loader(opt, is_train=True, loc='/local2/pratikac/'):
             batch_size=opt['b'], shuffle=False,
             num_workers=nw, pin_memory=True)
 
-def get_loader(opt, is_train=True, loc='/local2/pratikac/'):
+def get_loader(opt, is_train=True, loc=DATA):
     is_train_str = 'train' if is_train else 'test'
     dataset = opt['dataset']
 

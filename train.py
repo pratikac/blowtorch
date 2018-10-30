@@ -20,7 +20,7 @@ from scipy import interpolate
 from blowtorch import models, loss, exptutils, loader, viz
 
 opt = exptutils.add_args([
-['-o', '/home/%s/local2/pratikac/results'%os.environ['USER'], 'output'],
+['-o', '/data/results', 'output'],
 ['-m', 'lenet', 'lenet | mnistfc | allcnn | wrn* | resnet*'],
 ['--frac', 1., 'dataset fraction'],
 ['--dataset', 'mnist', 'mnist | cifar10 | cifar100 | imagenet | svhn*'],
