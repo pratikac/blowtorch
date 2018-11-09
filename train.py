@@ -3,7 +3,6 @@ import torch.optim as optim
 
 import torch.nn as nn
 import torchnet as tnt
-from torch.autograd import Variable, grad
 
 from timeit import default_timer as timer
 
@@ -50,7 +49,7 @@ def train(e, model, criterion, optimizer):
     ts, ts2 = timer(), timer()
     s = dict(lr=lr, e=e, f=[], top1=[])
     for bi, (x,y) in enumerate(ds):
-        x, y = Variable(x.to(g)), Variable(y.to(g))
+        x, y = x.to(g), y.to(g)
         model.zero_grad()
         yh = model(x)
         f = criterion(yh, y)
@@ -83,7 +82,7 @@ def val(e, model, criterion):
 
     with th.no_grad():
         for bi, (x,y) in enumerate(ds):
-            x, y = Variable(x.to(g)), Variable(y.to(g))
+            x, y = x.to(g), y.to(g)
             yh = model(x)
             f = criterion(yh, y)
 
@@ -148,21 +147,20 @@ def setup():
 
 def main():
     model = getattr(models, opt['m'])(opt)
-    criterion = loss.wrap(nn.CrossEntropyLoss(),
-                            loss.ell2(opt, model))
+    criterion = loss.wrap(nn.CrossEntropyLoss(), loss.ell2(opt, model))
 
     lr = exptutils.schedule(0, opt, 'lr')
     optimizer = th.optim.SGD(model.parameters(), lr=lr,
                              nesterov=True, momentum=0.9)
 
     start_e, sts, svs = reload(model)
+    model, criterion = exptutils.cudafy(opt, model, criterion)
 
     pprint(opt)
     for e in range(start_e, opt['B']):
         print('')
         st, sv = None, None
 
-        model, criterion = exptutils.cudafy(opt, model, criterion)
         st = train(e, model, criterion, optimizer)
         sts.append(st)
 
@@ -173,9 +171,7 @@ def main():
             save(dict(
                       opt=opt,
                       e=e, train_stats=sts, val_stats=svs,
-                      state_dict=model.cpu().state_dict() \
-                            if len(opt['gs']) == 1 else model.module.cpu().state_dict() ,
-                      criterion=criterion.cpu())
+                      state_dict=model.state_dict())
             )
 
 setup()

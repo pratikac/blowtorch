@@ -10,10 +10,9 @@ from copy import deepcopy
 import numpy as np
 
 class ell2(_Loss):
-    def __init__(self, opt, model, random=False):
+    def __init__(self, opt, model):
         super().__init__()
         self.m = model
-        self.random = random
         self.l2 = opt['l2']
 
         self.wd = []
@@ -24,17 +23,11 @@ class ell2(_Loss):
                     for n,p in m.named_parameters():
                         if not n in ['bias']:
                             self.wd.append(p)
-                            if self.random:
-                                _r = th.randn(p.shape).to(p.device)
-                                self.l2s.append(_r)
-                            else:
-                                self.l2s.append(th.ones(p.shape).to(p.device))
 
     def forward(self, yh, y):
         f = 0
-        for p,r in zip(self.wd, self.l2s):
-            r = r.to(p.device)
-            f = f + self.l2/2.*(p*r).norm()**2
+        for p in self.wd:
+            f = f + self.l2/2.*p.norm()**2
         return f
 
 class wrap(_Loss):
