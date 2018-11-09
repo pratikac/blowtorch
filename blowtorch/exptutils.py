@@ -4,6 +4,7 @@ import time, logging, pprint
 from scipy import interpolate
 
 import torch as th
+import torch.nn as nn
 import torchnet as tnt
 import torch.backends.cudnn as cudnn
 from torch.autograd import Variable
@@ -127,7 +128,9 @@ def setup(opt):
 def cudafy(opt, model, criterion):
     g, gs = opt['g'], opt['gs']
     if len(gs) > 1:
-        model = nn.DataParallel(model, device_ids=gs,
+        model = model.cuda(g)
+        model = nn.DataParallel(model,
+                                device_ids=gs,
                                 output_device=g)
     else:
         model = model.cuda(g)

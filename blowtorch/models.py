@@ -184,12 +184,13 @@ class caddtable_t(nn.Module):
 class wrn(nn.Module):
     def __init__(self, opt):
         super().__init__()
-        self.name = 'wrn%d%d'%(opt['depth'], opt['widen'])
 
         opt['d'] = opt.get('d', 0.25)
         opt['l2'] = 5e-4
         opt['depth'] = opt.get('depth', 28)
         opt['widen'] = opt.get('widen', 10)
+
+        self.name = 'wrn%d%d'%(opt['depth'], opt['widen'])
 
         d, depth, widen = opt['d'], opt['depth'], opt['widen']
 

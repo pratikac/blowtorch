@@ -50,8 +50,7 @@ def train(e, model, criterion, optimizer):
     ts, ts2 = timer(), timer()
     s = dict(lr=lr, e=e, f=[], top1=[])
     for bi, (x,y) in enumerate(ds):
-        x, y = Variable(x.cuda(g, non_blocking=True)), \
-                Variable(y.cuda(g, non_blocking=True))
+        x, y = Variable(x.to(g)), Variable(y.to(g))
         model.zero_grad()
         yh = model(x)
         f = criterion(yh, y)
@@ -84,8 +83,7 @@ def val(e, model, criterion):
 
     with th.no_grad():
         for bi, (x,y) in enumerate(ds):
-            x, y = Variable(x.cuda(g, non_blocking=True)), \
-                Variable(y.cuda(g, non_blocking=True))
+            x, y = Variable(x.to(g)), Variable(y.to(g))
             yh = model(x)
             f = criterion(yh, y)
 
@@ -159,13 +157,12 @@ def main():
 
     start_e, sts, svs = reload(model)
 
-    exptutils.cudafy(opt, model, criterion)
     pprint(opt)
-
     for e in range(start_e, opt['B']):
         print('')
         st, sv = None, None
 
+        model, criterion = exptutils.cudafy(opt, model, criterion)
         st = train(e, model, criterion, optimizer)
         sts.append(st)
 
@@ -180,7 +177,6 @@ def main():
                             if len(opt['gs']) == 1 else model.module.cpu().state_dict() ,
                       criterion=criterion.cpu())
             )
-            exptutils.cudafy(opt, model, criterion)
 
 setup()
 main()

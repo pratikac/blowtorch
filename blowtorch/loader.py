@@ -93,7 +93,7 @@ def get_loader(opt, is_train=True, loc=DATA):
         if is_train and augment:
             tds = tnt.dataset.TransformDataset(tds, {0:transforms})
         return tds.parallel(batch_size=opt['b'],
-                            num_workers=max(opt['j'], 2), shuffle=is_train,
+                            num_workers=max(2*opt['j'], 2), shuffle=is_train,
                             pin_memory=True)
     else:
         return get_imagenet_loader(opt, is_train=is_train, loc=loc)
